@@ -2,7 +2,7 @@ window.addEventListener('DOMContentLoaded', function() {
 
     'use strict';
 
-    // Tabs
+    // Tabs.
 
     let tab = document.querySelectorAll('.info-header-tab'),
         info = document.querySelector('.info-header'),
@@ -38,7 +38,7 @@ window.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    //Timer
+    // Timer.
 
     let deadLine = '2020-02-14';
 
@@ -90,7 +90,7 @@ window.addEventListener('DOMContentLoaded', function() {
 
     setClock('timer', deadLine);
 
-    // Modal
+    // Modal.
 
     let more = document.querySelector('.more'),
         overlay = document.querySelector('.overlay'),
@@ -108,54 +108,101 @@ window.addEventListener('DOMContentLoaded', function() {
         document.body.style.overflow = '';
     });
 
-    // Form
+    // Form.
 
     let message = {
         loading: 'Loading...',
-        success: 'Thank u! We will contact you soon! (no)',
-        failure: 'Error!'
+        success: 'Thank u! We will contact you soon! (NO)',
+        failure: 'Error! Try later! Have a nice day! ;)'
     };
 
     let form = document.querySelector('.main-form'),
         input = form.getElementsByTagName('input'),
         statusMessage = document.createElement('div');
+        statusMessage.classList.add('status');
+    
+    // Without promises.
 
-    statusMessage.classList.add('status');
+    // form.addEventListener('submit', function(event){
+    //     event.preventDefault();
+    //     form.appendChild(statusMessage);
 
-    form.addEventListener('submit', function(event){
-        event.preventDefault();
-        form.appendChild(statusMessage);
+    //     let request = new XMLHttpRequest();
+    //     request.open('POST', 'server.php');
+    //     request.setRequestHeader('Content-type', 'application/json; charset = utf-8');
 
-        let request = new XMLHttpRequest();
-        request.open('POST', 'server.php');
-        request.setRequestHeader('Content-type', 'application/json; charset = utf-8');
+    //     let formData = new FormData(form);
 
-        let formData = new FormData(form);
+    //     let obj = {};
+    //     formData.forEach(function(value, key) {
+    //         obj[key] = value;
+    //     });
+    //     let json = JSON.stringify(obj);
 
-        let obj = {};
-        formData.forEach(function(value, key) {
-            obj[key] = value;
+    //     request.send(json);
+
+    //     request.addEventListener('readystatechange', function() {
+    //         if (request.readyState < 4) {
+    //             statusMessage.innerHTML = message.loading;
+    //         } else if (request.readyState === 4 && request.status == 200) {
+    //             statusMessage.innerHTML = message.success;
+    //         } else {
+    //             statusMessage.innerHTML = message.failure;
+    //         }
+    //     });
+
+    //     for (let i = 0; i < input.length; i++) {
+    //         input[i].value = '';
+    //     }
+    // });
+
+    // With promises.
+
+    function sendForm(elem) {
+        elem.addEventListener('submit', function(e){
+            e.preventDefault();
+                elem.appendChild(statusMessage);
+                let formData = new FormData(elem);
+
+                function postData(data) {
+                    return new Promise(function(resolve, reject){
+                        let request = new XMLHttpRequest();
+
+                        request.open('POST', 'server.php');
+
+                        request.setRequestHeader('Content-type', 'application/json; charset = utf-8');
+
+                        request.onreadystatechange = function() {
+                            if(request.readyState < 4) {
+                                resolve()
+                            } else if (request.readyState === 4) {
+                                if (request.status == 200 && request.status < 300) {
+                                    resolve()
+                                }
+                                else {
+                                    reject()
+                                }
+                            }
+                        }
+
+                        request.send(data);
+                    })
+                } // End postData
+
+                function clearInput() {
+                    for (let i = 0; i < input.length; i++) {
+                        input[i].value = '';
+                    }
+                }
+
+                postData(formData)
+                    .then(() => statusMessage.innerHTML = message.loading)
+                    .catch(() => statusMessage.innerHTML = message.failure)
+                    .then(clearInput)
         });
-        let json = JSON.stringify(obj);
 
-        request.send(json);
-
-        request.addEventListener('readystatechange', function() {
-            if (request.readyState < 4) {
-                statusMessage.innerHTML = message.loading;
-            } else if (request.readyState === 4 && request.status == 200) {
-                statusMessage.innerHTML = message.success;
-            } else {
-                statusMessage.innerHTML = message.failure;
-            }
-        });
-
-        for (let i = 0; i < input.length; i++) {
-            input[i].value = '';
-        }
-    });
-
-    // Slider
+        sendForm(form);
+    }
 
     // Slider
 
